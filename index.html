@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管路監測系統 Pro</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #1c1e21;
+            --text-sub: #606770;
+            --primary-blue: #2e69ff;
+            --danger-red: #fb4b4b;
+            --warning-orange: #fca130;
+            --success-green: #2ecc71;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { width: 100%; max-width: 500px; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 即時數據卡片 */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .data-item { background: #f8f9fa; padding: 15px; border-radius: 12px; }
+        .data-label { font-size: 13px; color: var(--text-sub); }
+        .data-value { font-size: 20px; font-weight: bold; margin-top: 5px; }
+
+        /* 判斷條件列表 */
+        .logic-list { list-style: none; padding: 0; margin: 0; }
+        .logic-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logic-list li:last-child { border-bottom: none; }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 判斷結果區塊 */
+        .status-box {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        .status-normal { color: var(--success-green); background: #eafaf1; border: 1px solid var(--success-green); }
+        .status-danger { color: var(--danger-red); background: #fdeded; border: 1px solid var(--danger-red); }
+        .status-warning { color: var(--warning-orange); background: #fef5e7; border: 1px solid var(--warning-orange); }
+
+        .btn-simulate {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2 style="font-size: 20px; margin: 0;">🌊 管路監測 Pro</h2>
+        <button class="btn-simulate" onclick="simulateData()">模擬測試</button>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📊 即時量測值</div>
+        <div class="data-grid">
+            <div class="data-item">
+                <div class="data-label">水位高度</div>
+                <div class="data-value" id="val-water">-- <span style="font-size: 12px;">cm</span></div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">理想流速</div>
+                <div class="data-value" id="val-flow">-- <span style="font-size: 12px;">cm/min</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">⚙️ 判定邏輯設定</div>
+        <ul class="logic-list">
+            <li>
+                <span>水位判斷</span>
+                <span class="badge" style="background: #eef2ff; color: var(--primary-blue);">≥ 1/3 總高</span>
+            </li>
+            <li>
+                <span>流速判斷 (堵塞)</span>
+                <span class="badge" style="background: #fff1f0; color: var(--danger-red);">&lt; 4800</span>
+            </li>
+            <li>
+                <span>流速判斷 (湍急)</span>
+                <span class="badge" style="background: #fff7e6; color: var(--warning-orange);">&gt; 18000</span>
+            </li>
+            <li>
+                <span>次數條件</span>
+                <span class="badge" style="background: #f0f0f0; color: #666;">5分鐘內 ≥ 3次</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🚨 系統診斷結果</div>
+        <div id="status-display" class="status-box">請點擊右上角模擬測試</div>
+    </div>
+</div>
+
+<script>
+    function simulateData() {
+        // 隨機模擬水位與流速
+        const waterHeight = Math.floor(Math.random() * 100);
+        const flowRate = Math.floor(Math.random() * 25000); 
+
+        // 更新畫面數值
+        document.getElementById('val-water').innerHTML = waterHeight + ' <span style="font-size: 12px;">cm</span>';
+        document.getElementById('val-flow').innerHTML = flowRate + ' <span style="font-size: 12px;">cm/min</span>';
+
+        const statusBox = document.getElementById('status-display');
+        
+        // 核心判斷邏輯
+        if (flowRate < 4800) {
+            statusBox.innerText = "❌ 偵測到管路堵塞";
+            statusBox.className = "status-box status-danger";
+        } else if (flowRate > 18000) {
+            statusBox.innerText = "⚠️ 水流異常湍急";
+            statusBox.className = "status-box status-warning";
+        } else {
+            statusBox.innerText = "✅ 系統運作正常";
+            statusBox.className = "status-box status-normal";
+        }
+    }
+</script>
+
+</body>
+</html>
